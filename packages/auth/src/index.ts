@@ -37,7 +37,10 @@ export function initAuth(options: {
         redirectURI: `${options.productionUrl}/api/auth/callback/discord`,
       },
     },
-    trustedOrigins: ["expo://"],
+    trustedOrigins: ["charlesflow://"],
+    emailAndPassword: {
+      enabled: true,
+    }, 
   } satisfies BetterAuthOptions;
 
   return betterAuth(config);
