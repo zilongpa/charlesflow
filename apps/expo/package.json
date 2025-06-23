@@ -36,6 +36,7 @@
     "expo-system-ui": "~5.0.7",
     "expo-updates": "~0.28.15",
     "expo-web-browser": "14.2.0",
+    "lucide-react-native": "^0.522.0",
     "nativewind": "~4.1.23",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
@@ -45,6 +46,7 @@
     "react-native-reanimated-carousel": "^4.0.2",
     "react-native-safe-area-context": "~5.4.0",
     "react-native-screens": "~4.11.1",
+    "react-native-svg": "15.11.2",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
     "superjson": "2.2.2"
