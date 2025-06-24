@@ -1,18 +1,19 @@
-import { Suspense } from "react";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { GalleryVerticalEnd } from "lucide-react";
 
 import bu from "@charlesflow/assets/src/images/boston-university/1.jpg";
-import { cn } from "@charlesflow/ui";
 import { Button } from "@charlesflow/ui/button";
 import { Input } from "@charlesflow/ui/input";
 import { Label } from "@charlesflow/ui/label";
 
-import { HydrateClient, prefetch, trpc } from "~/trpc/server";
+import { auth, getSession } from "~/auth/server";
+import { HydrateClient } from "~/trpc/server";
+import Link from "next/link";
 
-function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
+function LoginForm() {
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className="flex flex-col gap-6">
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
         <p className="text-balance text-sm text-muted-foreground">
@@ -27,16 +28,28 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
         <div className="grid gap-3">
           <div className="flex items-center">
             <Label htmlFor="password">Password</Label>
-            <a
+            <Link
               href="#"
               className="ml-auto text-sm underline-offset-4 hover:underline"
             >
               Forgot your password?
-            </a>
+            </Link>
           </div>
           <Input id="password" type="password" required />
         </div>
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full" formAction={async (fromData) => {
+            "use server";
+            const res = await auth.api.signInEmail({
+              body: {
+                email: fromData.get("email") as string,
+                password: fromData.get("password") as string,
+              },
+            });
+            if (!res.url) {
+              throw new Error("No URL returned from signInSocial");
+            }
+            redirect(res.url);
+          }}>
           Login
         </Button>
         <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -44,7 +57,26 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
             Or continue with
           </span>
         </div>
-        <Button variant="outline" className="w-full">
+        <Button
+          variant="outline"
+          className="w-full"
+          size="lg"
+          type="button"
+          onClick={async () => {
+            "use server";
+            const res = await auth.api.signInSocial({
+              body: {
+                provider: "google",
+                callbackURL: "/",
+                newUserCallbackURL: "/",
+              },
+            });
+            if (!res.url) {
+              throw new Error("No URL returned from signInSocial");
+            }
+            redirect(res.url);
+          }}
+        >
           <svg viewBox="-3 0 262 262" width={16} height={16} className="mr-2">
             <g>
               <path
@@ -70,16 +102,19 @@ function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
       </div>
       <div className="text-center text-sm">
         Don&apos;t have an account?{" "}
-        <a href="#" className="underline underline-offset-4">
+        <Link href="#" className="underline underline-offset-4">
           Sign up
-        </a>
+        </Link>
       </div>
     </form>
   );
 }
 
-export default function loginPage() {
-  prefetch(trpc.post.all.queryOptions());
+export default async function loginPage() {
+  const session = await getSession();
+  if (session) {
+    redirect("/");
+  }
 
   return (
     <HydrateClient>
